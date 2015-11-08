@@ -1,6 +1,5 @@
 package elements.generic.bonus;
 
-import jeu.Stats;
 import assets.SoundMan;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,18 +12,22 @@ import elements.particles.individual.RubicoParticles;
 
 public class BonusExplosive extends Bonus {
 	
-	private static final float WIDTH = Stats.UU, HALF_WIDTH = WIDTH / 2;
 	private float angle = 0;
 	public static final Pool<BonusExplosive> POOL = new Pool<BonusExplosive>() {
 		protected BonusExplosive newObject() {			return new BonusExplosive();		}
 	};
+	
+	public BonusExplosive() {
+		super();
+		light.setColor(PrecalculatedParticles.COLORS[4]);
+	}
 
 	@Override
 	void drawMe(SpriteBatch batch) {
 		angle++;
-		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocFire, angle));
-		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocFire, angle));
-		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocFire, angle));
+		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocPink, angle));
+		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocPink, angle));
+		Particles.RUBICO.add(RubicoParticles.POOL.obtain().init(x, y, 0, PrecalculatedParticles.blocPink, angle));
 	}
 
 	@Override
@@ -38,10 +41,6 @@ public class BonusExplosive extends Bonus {
 		super.remove();
 		POOL.free(this);
 	}
-	@Override	float[] getColors() {		return PrecalculatedParticles.blocFire;		}
-	@Override	float getHalfWidth() {		return HALF_WIDTH;							}
-	@Override	float getHalfHeight() {		return HALF_WIDTH;							}
-	@Override	float getWidth() {			return WIDTH;								}
-	@Override	float getHeight() {			return WIDTH;								}
+	@Override	float[] getColors() {		return PrecalculatedParticles.blocPink;		}
 
 }

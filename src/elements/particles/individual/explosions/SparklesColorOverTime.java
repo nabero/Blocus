@@ -11,7 +11,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
-import elements.generic.Paddle;
 import elements.generic.blocs.Bloc;
 import elements.generic.bonus.Bonus;
 import elements.particles.Particles;
@@ -24,6 +23,7 @@ public class SparklesColorOverTime implements Poolable {
 	private float x, y, speedX, speedY, angle;
 	private float[] colors;
 	private int index;
+	private static final int MAX = 40;
 	public static final float HEIGHT = Stats.UUU * .75f, HALF_HEIGHT = HEIGHT / 2, WIDTH = Stats.uDiv4 * 2.5f, HALF_WIDTH = WIDTH / 2, WIDTH2 = WIDTH * 2;
 	private static final Vector2 tmpVector = new Vector2();
 	public static final Pool<SparklesColorOverTime> POOL = new Pool<SparklesColorOverTime>() {
@@ -34,8 +34,11 @@ public class SparklesColorOverTime implements Poolable {
 	@Override
 	public void reset() {	}
 	
+//	static int max;
 	public static void act(Array<SparklesColorOverTime> explosions, SpriteBatch batch) {
-		if (EndlessMode.alternate && !EndlessMode.triggerStop) {
+//		max = Math.max(max, explosions.size);
+//		System.out.println("sparkles : " + max);
+		if ( (EndlessMode.alternate && !EndlessMode.triggerStop) || EndlessMode.fps < 60) {
 			for (SparklesColorOverTime e : explosions) {
 				batch.setColor(e.colors[e.index]);
 				batch.draw(AssetMan.dust, e.x, e.y, HALF_HEIGHT, HALF_WIDTH, HEIGHT, WIDTH, 1f, 1f, e.angle);
@@ -76,10 +79,10 @@ public class SparklesColorOverTime implements Poolable {
 //				GHOSTS.add(Ghost.POOL.obtain().init(e.x, e.y, e.colors[e.index], e.angle));
 				
 				// paddle
-				if (e.y < Paddle.top) {
-					if (e.x > Paddle.x && e.x < Paddle.right) { 
+				if (e.y < EndlessMode.ship.top) {
+					if (e.x > EndlessMode.ship.x && e.x < EndlessMode.ship.right) { 
 						e.speedY = Math.abs(e.speedY);
-						e.y = Paddle.top;
+						e.y = EndlessMode.ship.top;
 						setAngle(e);
 					}
 					// top
@@ -108,19 +111,42 @@ public class SparklesColorOverTime implements Poolable {
 		Ghost.clear(GHOSTS);
 	}
 	
-	public static void add(float x, float y, float angle, float[] colors, Array<SparklesColorOverTime> array) {
-		array.add(POOL.obtain().init(x, y, colors, 0, 0, 0, angle));
+	public static void add(float x, float y, float angle, float[] colors, float speed, int factor) {
+		for (int i = 0; i < EndlessMode.fpsMinus / factor || i < MAX; i++) {
+			tmpVector.x = speed;
+			tmpVector.y = 0;
+			tmpVector.rotate(angle);
+			Particles.COLOR_OVER_TIME.add(POOL.obtain().init(x, y, colors, Rubico.R.nextInt((int) (colors.length * 0.25f)), tmpVector.x, tmpVector.y, angle));
+		}
 	}
-
-	public static void add(float x, float y, float angle, float[] colors, float speed) {
-		tmpVector.x = speed;
+	
+	/**
+	 * tmpVector.x = speed;
 		tmpVector.y = 0;
 		tmpVector.rotate(angle);
 		Particles.COLOR_OVER_TIME.add(POOL.obtain().init(x, y, colors, Rubico.R.nextInt((int) (colors.length * 0.25f)), tmpVector.x, tmpVector.y, angle));
+	 */
+	static float tmp;
+	public static void add(float x, float y, float angle, float[] colors, float speed, int factor, float angleRand, float speedRand) {
+		for (int i = 0; i < EndlessMode.fpsMinus / factor || i < MAX; i++) {
+			tmpVector.x = speed + (Rubico.R.nextFloat() * speed * 2);
+			tmpVector.y = 0;
+			tmp = angle + (float)(Rubico.R.nextGaussian() * angleRand);
+			tmpVector.rotate(tmp);
+			Particles.COLOR_OVER_TIME.add(POOL.obtain().init(x, y, colors, Rubico.R.nextInt((int) (colors.length * 0.25f)), tmpVector.x, tmpVector.y, tmp));
+		}
+	}
+	
+	public static void add(Array<SparklesColorOverTime> colorOverTime, float[] colors, float x, float y, int factor) {
+		for (int i = 0; i < EndlessMode.fpsMinus / factor || i < MAX; i++) {
+			tmpVector.x = (float) ( Rubico.R.nextGaussian() * Stats.V_PARTICLE_EXPLOSION_SLOW );
+			tmpVector.y = (float) ( Rubico.R.nextGaussian() * Stats.V_PARTICLE_EXPLOSION_SLOW );
+			colorOverTime.add(POOL.obtain().init(x, y, colors, Rubico.R.nextInt(colors.length) / 4, tmpVector.x, tmpVector.y, tmpVector.angle()));
+		}
 	}
 
 	public static void add(Array<SparklesColorOverTime> colorOverTime, Bloc e, float[] colors, Vector2 dir) {
-		for (int i = -EndlessMode.fps; i < EndlessMode.fps; i++)
+		for (int i = 0; i < EndlessMode.fpsMinus || i < MAX; i++)
 			colorOverTime.add(POOL.obtain().init(e.getRandomXInside(), e.getRandomYInside(), colors, dir));
 	}
 
@@ -140,12 +166,6 @@ public class SparklesColorOverTime implements Poolable {
 		this.speedY = speedY;
 		this.angle = angle;
 		return this;
-	}
-
-	public static void add(Array<SparklesColorOverTime> colorOverTime, float[] colors, float x, float y) {
-		tmpVector.x = (float) ( Rubico.R.nextGaussian() * Stats.V_PARTICLE_EXPLOSION_SLOW );
-		tmpVector.y = (float) ( Rubico.R.nextGaussian() * Stats.V_PARTICLE_EXPLOSION_SLOW );
-		colorOverTime.add(POOL.obtain().init(x, y, colors, Rubico.R.nextInt(colors.length) / 4, tmpVector.x, tmpVector.y, tmpVector.angle()));
 	}
 
 }

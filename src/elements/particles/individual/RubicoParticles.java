@@ -11,11 +11,11 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
 
 import elements.generic.Ball;
-import elements.generic.Paddle;
+import elements.generic.paddles.StraightPaddle;
 
 public class RubicoParticles implements Poolable {
 	
-	public static final float WIDTH = Rubico.screenWidth / 75, HALF_WIDTH = WIDTH / 2, SPEED = Rubico.tierWidth, FURIOUS = SPEED * 4;
+	public static final float WIDTH = Rubico.screenWidth / 35, HALF_WIDTH = WIDTH / 2, SPEED = Rubico.tierWidth, FURIOUS = SPEED * 4;
 	public static final Pool<RubicoParticles> POOL = new Pool<RubicoParticles>() {
 		protected RubicoParticles newObject() {			return new RubicoParticles();		}
 	};
@@ -51,25 +51,34 @@ public class RubicoParticles implements Poolable {
 		Rubico.tmpDir.rotate(v.angle);
 		width = (Rubico.R.nextFloat() + 2) * HALF_WIDTH;
 		Rubico.tmpPos.x = 0;
-		Rubico.tmpPos.y = v.width;
+		Rubico.tmpPos.y = Ball.WIDTH;//v.width;
 		Rubico.tmpPos.rotate(Rubico.R.nextFloat() * 360);
 		this.colors = v.getColors();
-		return set((v.x - width/2) + Rubico.tmpPos.x, (v.y - width/2) + Rubico.tmpPos.y, Rubico.tmpDir.x, Rubico.tmpDir.y, width, Rubico.R.nextInt(colors.length / 4), v.getColors());
+		return set((v.centerX - width/2) + Rubico.tmpPos.x, (v.centerY - width/2) + Rubico.tmpPos.y, Rubico.tmpDir.x, Rubico.tmpDir.y, width, Rubico.R.nextInt(colors.length / 4), v.getColors());
 	}
 	
 	public RubicoParticles init(Ball v) {
-		Rubico.tmpPos.x = 0;
-		Rubico.tmpPos.y = v.width;
-		Rubico.tmpPos.rotate(Rubico.R.nextFloat() * 360);
+//		Rubico.tmpPos.x = 0;
+//		Rubico.tmpPos.y = v.width;
+//		Rubico.tmpPos.rotate(Rubico.R.nextFloat() * 360);
 		this.colors = v.getColors();
-		return set((v.x - width/2) + Rubico.tmpPos.x, (v.y - width/2) + Rubico.tmpPos.y, (float) (Rubico.R.nextGaussian() * SPEED), (float) (Rubico.R.nextGaussian() * SPEED),
-				(Rubico.R.nextFloat() + 2) * HALF_WIDTH, Rubico.R.nextInt(colors.length / 4), v.getColors());
+		width = (Rubico.R.nextFloat() + 2) * HALF_WIDTH;
+		Rubico.tmpDir.x = 0;
+		Rubico.tmpDir.y = Rubico.R.nextFloat() / 2;
+		Rubico.tmpDir.rotate(Rubico.R.nextFloat() * 360);
+		return set(
+				(v.centerX - width/2) + Rubico.tmpDir.x,
+				(v.centerY - width/2) + Rubico.tmpDir.y,
+				(float) (Rubico.R.nextGaussian() * SPEED), (float) (Rubico.R.nextGaussian() * SPEED),
+				width, Rubico.R.nextInt(colors.length / 4), v.getColors());
 	}
 
 	@Override
 	public void reset() {	}
 	
+	static int max;
 	public static void act(Array<RubicoParticles> flammes, SpriteBatch batch) {
+//		max = Math.max(max, flammes.size);
 		if (EndlessMode.alternate) {
 			for (final RubicoParticles f : flammes) {
 				batch.setColor(f.colors[f.index]);
@@ -101,17 +110,20 @@ public class RubicoParticles implements Poolable {
 				f.width -= tmpWidth;
 				
 				// paddle
-				if (f.y < Paddle.top) {
-					if (f.x > Paddle.x && f.x < Paddle.right) {
+				if (f.y < EndlessMode.ship.top) {
+					if (f.x > EndlessMode.ship.x && f.x < EndlessMode.ship.right) {
 						f.vitesseY = Math.abs(f.vitesseY);
-						f.y = Paddle.top;
+						f.y = EndlessMode.ship.top;
 					}
 				// top
 				} else if (f.y > Rubico.screenHeight) {
 					f.vitesseY = -Math.abs(f.vitesseY);
 					Bump.addTop(f.x, WIDTH, WIDTH, f.colors);
 				}
-				
+				if (++f.index >= f.colors.length) {
+					POOL.free(f);
+					flammes.removeValue(f, true);
+				}
 			}
 		}
 		batch.setColor(AssetMan.WHITE);

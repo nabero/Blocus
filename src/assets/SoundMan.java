@@ -7,7 +7,7 @@ import com.badlogic.gdx.audio.Sound;
 
 public final class SoundMan {
 
-	public static Sound explosion1, explosion2, bigExplosion, explosion3, explosion4, explosion5, explosion6, shotRocket, bonusTaken, sunWeapon, xp, column, powerup1, powerup2;
+	public static Sound explosion1, explosion2, bigExplosion, explosion3, explosion4, explosion5, explosion6, shotRocket, bonusTaken, sunWeapon, xp, column, powerup1, powerup2, diamondTaken;
 	private static Sound[] EXPLOSIONS = new Sound[7];
 	public static Music outsideNorm;
 	private static final float MIN = 0.1f;

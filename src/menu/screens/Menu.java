@@ -1,5 +1,6 @@
 package menu.screens;
 
+import jeu.Physic;
 import jeu.Rubico;
 import jeu.Strings;
 import jeu.mode.EndlessMode;
@@ -19,10 +20,19 @@ import elements.particles.individual.explosions.ExplodingBloc;
 public class Menu extends AbstractScreen {
 
 	public final static Array<Bloc> BLOCS = new Array<Bloc>();
-	private float temps = 0, nextPop;
+	private float temps = 0, nextPop, xPromoText = Rubico.screenWidth;
+	private final String promoTxt = "Oggi sblocchi 150 diamanti e la versione senza banner grazie ad AppGratuita      Oggi sblocchi 150 diamanti e la versione senza banner grazie ad AppGratuita      Oggi sblocchi 150 diamanti e la versione senza banner grazie ad AppGratuita      Oggi sblocchi 150 diamanti e la versione senza banner grazie ad AppGratuita      Oggi sblocchi 150 diamanti e la versione senza banner grazie ad AppGratuita      ";
 	private int etapeCode = 0, cptBloc;
 	private Button highscores, achievements;
-	private static final float ECART = 0.85f, LIGNE_PLAY = 3.8f, LIGNE_TUTO = LIGNE_PLAY + ECART, LIGNE_OPTION = LIGNE_TUTO + ECART, LIGNE_HIGHSCORE = LIGNE_OPTION + ECART, LIGNE_ACHIEVEMENT = LIGNE_HIGHSCORE + ECART, LIGNE_EXIT = LIGNE_ACHIEVEMENT + ECART * 1.3f;
+	private static final float ECART = 0.90f,
+			LIGNE_PLAY = 3.8f, 
+//			LIGNE_ENDLESS = LIGNE_PLAY + ECART, 
+			LIGNE_OPTION = LIGNE_PLAY + ECART, 
+			LIGNE_HIGHSCORE = LIGNE_OPTION + ECART, 
+			LIGNE_ACHIEVEMENT = LIGNE_HIGHSCORE + ECART, 
+			LIGNE_OTHER_GAMES = LIGNE_ACHIEVEMENT + ECART,
+			LIGNE_ROLLER = LIGNE_OTHER_GAMES + ECART, 
+			LIGNE_EXIT = LIGNE_ROLLER + ECART * 1.02f;
 
 	public Menu(Game game) {
 		super(game);
@@ -72,7 +82,7 @@ public class Menu extends AbstractScreen {
 		BLOCS.add(Bloc.addBlock(X2, MIN_Y + 3, lvl));
 		BLOCS.add(Bloc.addBlock(X2, MIN_Y + 4, lvl));
 		
-		// LLLLLLLLLLLLLLLLLLLLLLLLLLL
+		// LLLLLLLLLLLLLLLLLLLLLLLLLLL/
 		// barre L
 		lvl++;
 		for (int i = 0; i < 5; i++)
@@ -119,39 +129,61 @@ public class Menu extends AbstractScreen {
 		BLOCS.add(Bloc.addBlock(X14, MIN_Y + 5, lvl));
 		
 		lvl++;
-		for (int i = 0; i < 14; i++) {
+		for (int i = 0; i < 14; i++)
 			BLOCS.add(Bloc.addBlock(i * Bloc.WIDTH, MIN_Y + 6, lvl));
-		}
 	}
 
 	public void setUpScreenElements() {
 		temps = 0;
 		Gdx.input.setCatchBackKey(true);
 
-		ajout(new Button(PLAY, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_PLAY)), new OnClick() {
+//		ajout(new Button("Levels", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_PLAY)), new OnClick() {
+//			public void onClick() {				changeMenu(new LevelChooser(game));			}
+//		}));
+//		ajout(new Button("Endless", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_ENDLESS)), new OnClick() {
+//			public void onClick() {				changeMenu(new EndlessMode(game, Rubico.batch, 1, true));			}
+//		}));
+		ajout(new Button(PLAY, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_PLAY)), new OnClick() {
 			public void onClick() {				changeMenu(new Choice(game));			}
 		}));
-		ajout(new Button("Tutorial", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_TUTO)), new OnClick() {
-			public void onClick() {				changeMenu(new Tutorial(game));									}
-		}));
-		ajout(new Button(OPTION, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_OPTION)), new OnClick() {
+//		ajout(new Button("Tutorial", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_TUTO)), new OnClick() {
+//			public void onClick() {				changeMenu(new Tutorial(game));									}
+//		}));
+		ajout(new Button(OPTION, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_OPTION)), new OnClick() {
 			public void onClick() {				changeMenu(new MenuOptions(game));								}
 		}));
-		highscores = new Button(HIGHSCORE, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_HIGHSCORE)));
+		highscores = new Button(HIGHSCORE, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_HIGHSCORE)));
 		ajout(highscores);
 		
-		achievements = new Button(ACHIEVEMENT, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_ACHIEVEMENT)));
+		achievements = new Button(ACHIEVEMENT, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_ACHIEVEMENT)));
 		ajout(achievements);
+		
+		
+		ajout(new Button("Other games", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_OTHER_GAMES), new OnClick() {
+			public void onClick() {
+				Rubico.talkToTheWorld.otherGames("https://play.google.com/store/search?q=be.julien&c=apps");
+			}
+		}));
+		
+		ajout(new Button(true, "RolleR", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_ROLLER), new OnClick() {
+			public void onClick() {
+				Rubico.talkToTheWorld.otherGames("https://play.google.com/store/apps/details?id=be.julien.roller");
+			}
+		}));
 
-		ajout(new Button(EXIT, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (int) (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_EXIT)), new OnClick() {
+		ajout(new Button(EXIT, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, (Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_EXIT)), new OnClick() {
 			public void onClick() {				Gdx.app.exit();													}
 		}));
 		
-		ajout(new Button(Strings.TWITTER, Rubico.menuFontSmall, MINI_BOUTON_WIDTH, MINI_BOUTON_HEIGHT / 2, (int) (Rubico.screenWidth - ((Rubico.menuFontSmall.getBounds(Strings.TWITTER).width * 2)) - PADDING * 3),  (int) (Rubico.screenHeight - (Rubico.heightDiv10 * (LIGNE_EXIT + ECART * 0.8f ))), new OnClick() {
+		ajout(new Button(Strings.TWITTER, Rubico.menuFontSmall, MINI_BOUTON_WIDTH, MINI_BOUTON_HEIGHT / 2,
+				Rubico.screenWidth - MINI_BOUTON_WIDTH * 1.5f,
+				Rubico.screenHeight - (Rubico.heightDiv10 * (LIGNE_EXIT + (ECART * 0.2f) )), new OnClick() {
 			public void onClick() {				Rubico.talkToTheWorld.followTwitter();						}
 		}));
+		
+
 		Bloc.clear();
-		if (Gdx.app.getVersion() != 0)
+		if (!Rubico.profile.isAdsFree())
 			Rubico.talkToTheWorld.showAds(true);
 	}
 
@@ -159,15 +191,10 @@ public class Menu extends AbstractScreen {
 	public void render(float delta) {
 		cam.update();
 		Rubico.batch.setProjectionMatrix(cam.combined);
-		if (Gdx.input.isTouched()
-				&& Rubico.screenHeight - Gdx.input.getY() > highscores.sprite.getY() 
-				&& Rubico.screenHeight - Gdx.input.getY() < highscores.sprite.getY() + highscores.sprite.getHeight()) {
-			
+		if (Gdx.input.isTouched() && Physic.getYClic() > highscores.sprite.getY() && Physic.getYClic() < highscores.sprite.getY() + highscores.sprite.getHeight())
 				Rubico.talkToTheWorld.getScores();
-		}
-		if (Gdx.input.isTouched() && Rubico.screenHeight - Gdx.input.getY() > achievements.sprite.getY() && Rubico.screenHeight - Gdx.input.getY() < achievements.sprite.getY() + achievements.sprite.getHeight()) {
+		if (Gdx.input.isTouched() && Physic.getYClic() > achievements.sprite.getY() && Physic.getYClic() < achievements.sprite.getY() + achievements.sprite.getHeight())
 			Rubico.talkToTheWorld.getAchievements();
-		}
 		temps += delta;
 		etapeCode = detectiopnKonamiCode(etapeCode);
 		if (etapeCode == 8) {
@@ -195,6 +222,12 @@ public class Menu extends AbstractScreen {
 		}
 		Particles.draw(Rubico.batch);
 		ExplodingBloc.draw(Rubico.batch, Bloc.EXPLOSIONS);
+		
+//		if (Rubico.profile.isAdsFree()) {
+		if (Rubico.profile.promoAppOfTheDay) {
+			Rubico.menuFont.draw(Rubico.batch, promoTxt, xPromoText, Rubico.screenHeight * 0.975f);
+			xPromoText -= EndlessMode.delta2;
+		}
 		Rubico.batch.end();
 		
 		if (Gdx.input.isKeyPressed(Keys.BACK) && temps > 2)

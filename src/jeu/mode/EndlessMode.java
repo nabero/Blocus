@@ -1,5 +1,9 @@
 package jeu.mode;
 
+import menu.ui.GameFinishedUi;
+import menu.ui.Overlay;
+import jeu.Physic;
+import jeu.Profil;
 import jeu.Rubico;
 import jeu.Stats;
 import jeu.Strings;
@@ -13,6 +17,7 @@ import jeu.mode.extensions.Transition;
 import shaders.Bloom;
 import assets.AssetMan;
 import assets.SoundMan;
+import box2dLight.RayHandler;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -20,17 +25,21 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.utils.Array;
 
 import elements.generic.Ball;
-import elements.generic.Paddle;
-import elements.generic.PaddleShot;
+import elements.generic.blocs.Bloc;
 import elements.generic.blocs.Column;
 import elements.generic.bonus.Bonus;
+import elements.generic.bonus.Diamond;
+import elements.generic.paddles.AbstractPaddle;
 import elements.particles.Particles;
+import elements.particles.individual.StaticSmoke;
+import elements.particles.individual.explosions.ExplodingBloc;
+import elements.world.BlocWorld;
 
 /**
  * Classe principale gerant le mode infini du jeu
@@ -38,56 +47,56 @@ import elements.particles.Particles;
  */
 public class EndlessMode implements Screen {
 	
-	private Game game;
+	private static Game game;
 	private GL20 gl;
 	private static SpriteBatch batch = Rubico.batch;
 	public static Bloom bloom = Rubico.bloom;
 	public static boolean alternate = true, pause = false, scoreSent = false, triggerStop = false, lost = false;
-	public static Paddle ship;
+	public static AbstractPaddle ship;
 	public static float now = 0;
 	
-	public static final int X_CHRONO = Rubico.widthDiv10/2 - Rubico.halfWidth;
-	public static final int FONT_HEIGHT = Rubico.heightDiv10/3;
+	public static final float FONT_HEIGHT = Rubico.heightDiv10/3;
 	// *************************  D  P  A  D  ****************************
 
-	public static final OrthographicCamera cam = new OrthographicCamera(Rubico.screenWidth, Rubico.screenHeight);
 	public static int difficulty, nbBonusStop = 0, nbBombes = 0;
 	public static float bloomOriginalIntensity = 1, delta = 0, timeStopBonus = 0, delta15 = 0, deltaDiv3, deltaDiv2, delta2, deltaU, deltaMicroU, UnPlusDelta, unPlusDelta2, unPlusDelta3, deltaPlusExplosion, delta25, delta4;
 	public static boolean effetBloom = false, xpAjout = false;
-	private static Matrix4 tmpCombined; 
 	public static float originalDelta = 0, timeSinceLost = 0;
-	public static int fps, perf = 3, explosions = 0;
+	public static int fps, perf = 3, explosions = 0, fpsMinus;
 	private static boolean started = false;
-	private static float timeLost = 0;
 	public static final float STOP = 3;
 	public static boolean invicibility = false, freeze = false, frameByFrame = false, invoque = true;
 	public static Transition transition = new Transition();
 	public static int oneToFour = 1;
-	public static boolean endless, finished;
+	public static boolean endless = true, finished, surprise;
+	
+	private GameFinishedUi ui;
 
-	public EndlessMode(Game game, SpriteBatch batch, int level, boolean endless) {
+	public EndlessMode(Game game, SpriteBatch batch, int level, boolean endless, boolean surprise) {
 		super();
 		Gdx.input.setCatchBackKey(true);
 		EndlessMode.batch = batch;
-		this.game = game;
-		ship = new Paddle();
+		EndlessMode.game = game;
+		ship = Rubico.profile.getSelectedPaddle();
 		difficulty = level;
 		EndlessMode.endless = endless;
+		EndlessMode.surprise = surprise;
 		init();
-		ship.initialiser();
 		gl = Gdx.graphics.getGL20();
-		gl.glViewport(0, 0, Rubico.screenWidth, Rubico.screenHeight);
+		gl.glViewport(0, 0, (int)Rubico.screenWidth, (int)Rubico.screenHeight);
 		bloom = Rubico.bloom;
+		
+//		BlocWorld.initWalls();
 	}
 
 	public static void init() {
+		Rubico.talkToTheWorld.loadInterstitial();
+		Overlay.reset();
 		Rubico.reset();
-		bloom.setBloomIntesity(Rubico.profile.intensiteBloom);
-		ship.initialiser(); // Pour remettre les positions mais garder shield et adds
-		if (Gdx.app.getVersion() != 0)
-			Rubico.talkToTheWorld.showAds(false); // desactiver adds. A VIRER POUR LA RELEASE
+		ship.clear();
+		bloom.setBloomIntesity(Profil.intensiteBloom);
+		ship.initialiser(Rubico.profile.getSelectedPaddleLvl()); // Pour remettre les positions mais garder shield et adds
 		// ** DEPLACEMENT ZONE DE JEU
-		cam.position.set(Rubico.screenWidth/2, Rubico.screenHeight / 2, 0);
 		
         scoreSent = false;
         xpAjout = false;
@@ -103,7 +112,6 @@ public class EndlessMode implements Screen {
 		triggerStop = false;
 		nbBombes = 0;
 		Buttons.init();
-		cam.position.z = 1;
 		Rubico.profilManager.persist();
 		transition.reset();
 		started = false;
@@ -112,14 +120,29 @@ public class EndlessMode implements Screen {
 		Builder.init();
 		Bonus.clear();
 		finished = false;
+		Array<Body> bodies = new Array<Body>();
+		
+		BlocWorld.world.getBodies(bodies);
+		for (Body b : bodies)
+			b.setActive(false);
+		BlocWorld.rayHandler.setAmbientLight(0.1f, 0.1f, 0.11f, 0.4f);
+		RayHandler.setGammaCorrection(true);
+//		BlocWorld.rayHandler.setBlur(true);
+//		BlocWorld.rayHandler.setBlurNum(10);
+//		DirectionalLight dirLight = new DirectionalLight(BlocWorld.rayHandler, 24, new Color(0, 1, 1, 0.2f), -75);
 	}
 
 	@Override
 	public void render(float delta) {
 //		delta = Math.min(delta, 0.066f);
+		
 		if (!started) {
 			delta = 0;
+			Rubico.talkToTheWorld.showAds(false);
+			if (!Rubico.profile.isAdsFree())
+				Rubico.talkToTheWorld.displayInterstitial();
 			if (Gdx.input.justTouched()) {
+				SoundMan.playMusic();
 				started = true;
 			}
 		}
@@ -127,13 +150,14 @@ public class EndlessMode implements Screen {
 		originalDelta = delta;
 		if (Gdx.app.getVersion() == 0)
 			DesktopTests.debug();
-		cam();
+		Rubico.cam();
 		
 		bloomActive();
 		explosions = 0;
 		batch.begin();
 		
 		Particles.background(batch);
+		
 		if (Gdx.input.isKeyPressed(Keys.BACK)) { 
 			Buttons.backButton(batch, game);
 			pause = true;
@@ -155,13 +179,17 @@ public class EndlessMode implements Screen {
 				} else {
    					if (lost && !scoreSent) {
 						bloom.setBloomIntesity(1.1f);
-						Rubico.talkToTheWorld.submitScore(Strings.LEADERBOARD_KEY, Score.score );
+						if (endless) {
+							if (Score.score > 9000)
+								Rubico.talkToTheWorld.unlockAchievementGPGS(Strings.ACH_9000);
+							Rubico.talkToTheWorld.submitScore(Strings.LEADERBOARD_KEY, Score.score );
+						} else
+							Rubico.talkToTheWorld.submitScore(Strings.LEADERBOARD_LEVEL_KEY, Rubico.profile.lvl );
 						scoreSent = true;
 					}
 				}
 				affichagePerdu();
 				if (!triggerStop && lost) {
-					drawFinalScore(batch);
 					Column.explode(1);
 				}
 			}
@@ -171,23 +199,36 @@ public class EndlessMode implements Screen {
 			EndlessMode.delta = 0;
 			majDeltas();
 			affichagePerdu();
-			Buttons.backButton(batch, game);
-			if (Gdx.input.justTouched())
-				pause = false;
 		}
+		StaticSmoke.draw(batch);
 		if (triggerStop)
 			stopActivated();
-		PaddleShot.act(batch);
 		Column.draw(batch);
-		if (!lost) {
-			Ball.draw(batch);
+		if (!lost)
 			Bonus.draw(batch);
-		}
-		TemporaryText.draw(batch);
 		batch.end();
-		bloom.render();
+		// LATE
+		if (!Rubico.profile.lights())
+			bloom.render();
+		BlocWorld.act();
+		batch.begin();
+		ExplodingBloc.draw(batch, Bloc.EXPLOSIONS);
+		TemporaryText.draw(batch);
+		ui();
+		Ball.draw(batch);
+		Overlay.act(batch);
+		if (surprise) {
+			if (Gdx.input.isTouched() && Physic.getXClic() < 4)	batch.setColor(0.5f, 0.5f, 0.5f, .6f);
+			else																	batch.setColor(0.5f, 0.5f, 0.5f, .2f);
+			batch.draw(AssetMan.play, 2, 2, -2, 2);
+			if (Gdx.input.isTouched() && Physic.getXClic() > Rubico.screenWidth - 4)	batch.setColor(0.5f, 0.5f, 0.5f, .6f);
+			else																		batch.setColor(0.5f, 0.5f, 0.5f, .2f);
+			batch.draw(AssetMan.play, Rubico.screenWidth - 2, 2, 2, 2);
+		}
+		batch.end();
 		
 		fps = Gdx.graphics.getFramesPerSecond();
+		fpsMinus = fps - 10;
 		perf = fps / 10;
 		if (!started)
 			return;
@@ -196,11 +237,11 @@ public class EndlessMode implements Screen {
 		ScreenShake.act();
 		deltaPlusExplosion = EndlessMode.delta + explosions;
 		
-		if (lost && Gdx.input.justTouched() && now > timeLost + 0.8f) {
-			init();
-		}
+//		if (lost && Gdx.input.justTouched() && now > timeLost + 0.8f) {
+//			init();
+//		}
 	}
-
+	
 	private void alternate() {
 		alternate = !alternate;
 		if (++oneToFour > 4)
@@ -209,15 +250,6 @@ public class EndlessMode implements Screen {
 
 	private void stopActivated() {
 		ship.draw(batch);
-	}
-
-	public static void cam() {
-		cam.update();
-		tmpCombined = cam.combined;
-		if (tmpCombined != null) {
-			batch.setProjectionMatrix(tmpCombined);
-//			CSG.rayHandler.setCombinedMatrix(cam.combined);
-		}
 	}
 
 	public static void majDeltas() {
@@ -246,11 +278,15 @@ public class EndlessMode implements Screen {
 	}
 
 	private void bloomActive() {
-		if (triggerStop)
-			bloom.setBloomIntesity(Rubico.profile.intensiteBloom + (timeStopBonus*2));
-		else
-			ScreenShake.bloomEffect();
-		bloom.capture();
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		if (!Rubico.profile.lights()) {
+			if (triggerStop)
+				bloom.setBloomIntesity(Profil.intensiteBloom + (timeStopBonus*2));
+			else
+				ScreenShake.bloomEffect();
+			bloom.capture();
+		} else {
+		}
 	}
 
 	private static void mettrePause() {
@@ -258,35 +294,39 @@ public class EndlessMode implements Screen {
 		Rubico.profilManager.persist();
 	}
 	
+	private static final float top = Rubico.screenHeight * 0.85f;
 	private void drawFinalScore(SpriteBatch batch) {
 		timeSinceLost += Gdx.graphics.getDeltaTime();
 		
 		if (timeSinceLost < 0.7f)
 			return;
-		if (Gdx.app.getVersion() != 0)
-			Rubico.talkToTheWorld.showAds(true);
 		
 		batch.setColor(AssetMan.BLACK);
 		// xp dispo
 
-		displayText(batch, Score.xpDispo, Rubico.screenHeight * 0.76f);
-		displayText(batch, Score.xpNeeded, Rubico.screenHeight * 0.70f);
-		if (finished)							displayText(batch, "Congratulations !", Rubico.screenHeight * 0.64f);
-		else									displayText(batch, Strings.DEAD, Rubico.screenHeight * 0.64f);
-		displayText(batch, Score.strScore, Rubico.screenHeight * 0.58f);
+		if (finished)							displayText(batch, "Congratulations !", top - Rubico.outlineFont.getBounds("X").height * 2);
+		// thanks for playing
+		else									displayText(batch, Strings.DEAD, top - Rubico.outlineFont.getBounds("X").height * 2);
 		if (endless) {
-			if (Rubico.profile.newHighscore)	displayText(batch, "New highscore !!!", Rubico.screenHeight * 0.52f);
-			else								displayText(batch, Rubico.profile.highscoreString, Rubico.screenHeight * 0.52f);
+			displayText(batch, Score.strScore, top);
+			if (Rubico.profile.newHighscore)	displayText(batch, "New highscore !!!", top - Rubico.outlineFont.getBounds("X").height * 4);
+			else								displayText(batch, Rubico.profile.highscoreString, top - Rubico.outlineFont.getBounds("X").height * 4);
 		} else {
-			displayText(batch, Rubico.profile.lvlString, Rubico.screenHeight * 0.52f);
+			displayText(batch, Rubico.profile.lvlString, top);
 		}
 		batch.setColor(AssetMan.WHITE);
 		
-		Buttons.drawUpgradeAndTwitter(batch);
+		if (ui == null)
+			ui = new GameFinishedUi();
+		ui.draw(batch);
+		
+//		Buttons.drawUpgradeAndTwitter(batch);
 	}
 	
 	private static void displayText(SpriteBatch batch, CharSequence txt, float y) {
-		Rubico.outlineFont.draw(batch,txt, ((cam.position.x-Rubico.halfWidth)) + ((Rubico.halfWidth - (Rubico.outlineFont.getBounds(txt).width)/2)), y);
+		batch.setColor(0, 0, 0, 0.2f);
+		batch.draw(AssetMan.partBloc, 0, y, Rubico.screenWidth, -Rubico.outlineFont.getBounds(txt).height);
+		Rubico.outlineFont.draw(batch,txt, ((Rubico.cam.position.x-Rubico.halfWidth)) + ((Rubico.halfWidth - (Rubico.outlineFont.getBounds(txt).width)/2)), y);
 //		Rubico.outlineFont.setScale( 
 //				//1 + (EndlessMode.now % 1)
 //				1.3f
@@ -302,7 +342,6 @@ public class EndlessMode implements Screen {
 		stopActivated();
 		delta = prevDelta;
 		Particles.draw(batch);
-		ui();
 	}
 
 	public static void effetBloom() {
@@ -311,15 +350,19 @@ public class EndlessMode implements Screen {
 	}
 
 	private void ui() {
-		if (lost)
-			Buttons.initAndDrawButtons(batch);
+		if (lost) {
+			drawFinalScore(batch);
+//			Buttons.initAndDrawButtons(batch, game);
+		}
+		if (pause)
+			Buttons.backButton(batch, game);
 		Score.draw(batch, lost);
 	}
 
 	private void affichageNonPerdu() {
 		stopActivated();
 		Particles.draw(batch);
-		ui();
+//		ui();
 	}
 
 	private void update() {
@@ -336,15 +379,11 @@ public class EndlessMode implements Screen {
 	@Override	public void pause() {	}
 	@Override	public void resume() {		Rubico.assetMan.reload();	}
 	@Override	public void dispose() {	}
-	public static Camera getCam() {		return cam;	}
+	public static Camera getCam() {		return Rubico.cam;	}
 
 	public static void lost() {
-		if (!invicibility && !lost) {
-			timeLost = EndlessMode.now;
-			Score.lost(true);
-			timeSinceLost = 0;
-			lost = true;
-		}
+		if (!invicibility && !lost)
+			initFinishedUi();
 	}
 
 	public static boolean aPerdu() {
@@ -353,7 +392,6 @@ public class EndlessMode implements Screen {
 	
 	public static void reset() {
 		Particles.clear();
-		ship = new Paddle();
 		triggerStop = false;
 		pause = false;
 	}
@@ -364,13 +402,25 @@ public class EndlessMode implements Screen {
 	}
 
 	public static void finished() {
+		ship.clear();
+		for (Diamond d : Diamond.diamonds)
+			d.taken();
 		Rubico.profile.upLvl();
-		lost = true;
+		initFinishedUi();
 		finished = true;
-		timeLost = EndlessMode.now;
+		Builder.nextSeed();
+	}
+
+	private static void initFinishedUi() {
+//		Overlay.gameFinished();
 		Score.lost(true);
 		timeSinceLost = 0;
-		Builder.nextSeed();
+		lost = true;
+		
+	}
+
+	public static Game getGame() {
+		return game;
 	}
 
 }

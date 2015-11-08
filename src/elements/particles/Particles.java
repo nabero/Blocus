@@ -14,13 +14,13 @@ import elements.particles.individual.Bump;
 import elements.particles.individual.PaddleShotParticle;
 import elements.particles.individual.RubicoParticles;
 import elements.particles.individual.background.Star;
+import elements.particles.individual.explosions.FlashLight;
 import elements.particles.individual.explosions.SparklesColorOverTime;
 
 public class Particles {
 	 	
 	public static final int MAX_BACKGROUND = 400;
 	private static final Array<Star> STAR = new Array<Star>(false, 300);
-	public static final Array<PaddleShotParticle> PADDLE_SHOT = new Array<PaddleShotParticle>();
 	public static final Array<Bump> BUMPS = new Array<Bump>();
 	public static final Array<SparklesColorOverTime> COLOR_OVER_TIME = new Array<SparklesColorOverTime>();
 	public static final Array<RubicoParticles> RUBICO = new Array<RubicoParticles>(40);
@@ -39,32 +39,24 @@ public class Particles {
 		alphaBg += mv;
 		batch.setColor(alphaBg, 1, 1, 0.5f);
 		batch.draw(AssetMan.background, 0, 0, Rubico.halfWidth, Rubico.halfHeight, Rubico.screenWidth, Rubico.screenHeight, 1.5f, 2.3f, (alphaBg * 4));
-		batch.setColor(AssetMan.WHITE);
 		Star.act(batch, STAR);
 	}
 
 	public static void draw(SpriteBatch batch) {
 		SparklesColorOverTime.act(COLOR_OVER_TIME, batch);
 		RubicoParticles.act(RUBICO, batch);
-		PaddleShotParticle.act(PADDLE_SHOT, batch);
 		Bump.act(batch, BUMPS);
 	}
 	
 	public static void clear() {
+		FlashLight.clear();
 		RubicoParticles.clear(RUBICO);
 		SparklesColorOverTime.clear(COLOR_OVER_TIME);
 		Bump.clear(BUMPS);
-		PaddleShotParticle.clear(PADDLE_SHOT);
 	}
 
-	public static void sparkles(Vector2 pos, float sparkleAngle, float[] colors) {
-		for (int i = 0; i < EndlessMode.fps; i++)
-			SparklesColorOverTime.add(pos.x, pos.y, (float) (sparkleAngle + Rubico.R.nextGaussian() * 36), colors, Stats.U50 + (Stats.U90 * Rubico.R.nextFloat()));
-	}
-	
 	public static void sparkles(float x, float y, float sparkleAngle, float[] colors) {
-		for (int i = 0; i < EndlessMode.fps; i++)
-			SparklesColorOverTime.add(x, y, (float) (sparkleAngle + Rubico.R.nextGaussian() * 36), colors, Stats.U50 + (Stats.U90 * Rubico.R.nextFloat()));
+		SparklesColorOverTime.add(x, y, (float) (sparkleAngle + Rubico.R.nextGaussian() * 36), colors, Stats.U50 + (Stats.U90 * Rubico.R.nextFloat()), 1);
 	}
 	
 }

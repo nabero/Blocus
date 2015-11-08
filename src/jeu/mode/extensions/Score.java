@@ -4,37 +4,35 @@ import jeu.Rubico;
 import jeu.CharSeq;
 import jeu.mode.EndlessMode;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import elements.generic.Paddle;
+import elements.generic.paddles.StraightPaddle;
 import elements.particles.individual.PrecalculatedParticles;
 
 public class Score {
 
 	private final static char[] mockStrScore = {'S', 'c', 'o', 'r', 'e', ' ', ':', ' ', '0','0','0','.','0','0','0'};
 	public static CharSeq strScore = new CharSeq(mockStrScore);
-	public static String xpDispo, xpNeeded;
 	private static float rScore;
 	private static final float MIN_SCALE = getMinScale();
 	private static int scoreToProcess, currentDigit;
-	public static int score = 0, lvl;
-	public static float[] colors;
-	private static final int FONT_HEIGHT = Rubico.heightDiv10/5;
+	public static int score = 0, lvl = 1;
+	public static float[] colors = PrecalculatedParticles.getColors(lvl);
+	private static final float FONT_HEIGHT = Rubico.heightDiv10/5;
 	
 	public static void init() {
 		score = 0;
 		updateStringScore();
 		rScore = 0;
 		lvl = 1;
-		colors = PrecalculatedParticles.getColor(lvl);
+		colors = PrecalculatedParticles.getColors(lvl);
 	}
 	
 	private static float getMinScale() {
 		float originalScoreFontScale = Rubico.screenHeight + Rubico.screenWidth;
-		originalScoreFontScale /= 1000;
-		if (originalScoreFontScale < 1f)
-			originalScoreFontScale = 1f;
+		originalScoreFontScale /= 2000;
+//		if (originalScoreFontScale < 1f)
+//			originalScoreFontScale = 1f;
 		return originalScoreFontScale;
 	}
 
@@ -54,7 +52,7 @@ public class Score {
 		lvl = (Score.score / 500) + 1;
 		if (lvl > 7)
 			lvl = 7;
-		colors = PrecalculatedParticles.getColor(lvl);
+		colors = PrecalculatedParticles.getColors(lvl);
 	}
 
 	private static void updateFont() {
@@ -62,7 +60,7 @@ public class Score {
 		Rubico.scoreFont.setColor(colors[
 		                                 colors.length - (int) (colors.length * rScore)
 		                                 ]);
-		Rubico.scoreFont.setScale(MIN_SCALE + rScore/2);
+		Rubico.scoreFont.setScale(MIN_SCALE + rScore/40);
 	}
 
 	private static void updateStringScore() {
@@ -97,11 +95,8 @@ public class Score {
 	}
 
 	public static void lost(boolean persist) {
-		Rubico.profile.addXp(Score.score);
 		if (Rubico.profile.highscore < Score.score)
 			Rubico.profile.updateHighscore(Score.score);
-		xpDispo = "XP : " + Rubico.profile.xpDispo;
-		xpNeeded = "Needed : " + Rubico.profile.getCoutUpArme(Paddle.lvl);
 	}
 
 	public static void decrease() {

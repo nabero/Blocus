@@ -21,13 +21,36 @@ public class Bump {
 		protected Bump newObject() {			return new Bump();		}
 	};
 	
-	public static void addUpBall(float x, float[] colors) {								Particles.BUMPS.add(POOL.obtain().init(x - BIG / 2, Rubico.screenHeight - MIN / 2, colors, BIG, MIN));	}
-	public static void addLeftBall(float y, float[] colors) {							Particles.BUMPS.add(POOL.obtain().init(-MIN / 2, y - BIG / 2, colors, MIN, BIG));						}
-	public static void addRightBall(float y, float[] colors) {							Particles.BUMPS.add(POOL.obtain().init(Rubico.screenWidth - MIN / 2, y - BIG / 2, colors, MIN, BIG));	}
-	public static void addTop(float x, float min, float max, float[] colors) {			Particles.BUMPS.add(POOL.obtain().init(x - max / 2, Rubico.screenHeight - min / 2, colors, max, min));	}
-	public static void addLeft(float y, float min, float max, float[] colors) {			Particles.BUMPS.add(POOL.obtain().init(-min / 2, y - max / 2, colors, min, max));						}
-	public static void addRight(float y, float min, float max, float[] colors) {		Particles.BUMPS.add(POOL.obtain().init(Rubico.screenWidth - min / 2, y - max / 2, colors, min, max));	}
-	
+	public static void addUpBall(float x, float[] colors) {
+		Particles.BUMPS.add(POOL.obtain().init(x - BIG / 2, Rubico.screenHeight - MIN / 2, colors, BIG, MIN));
+	}
+
+	public static void addLeftBall(float y, float[] colors) {
+		Particles.BUMPS.add(POOL.obtain().init(-MIN / 2, y - BIG / 2, colors, MIN, BIG));
+	}
+
+	public static void addRightBall(float y, float[] colors) {
+		Particles.BUMPS.add(POOL.obtain().init(Rubico.screenWidth - MIN / 2, y - BIG / 2, colors, MIN, BIG));
+	}
+
+	public static void addTop(float x, float min, float max, float[] colors) {
+		if (EndlessMode.fps < 45)
+			return;
+		Particles.BUMPS.add(POOL.obtain().init(x - max / 2, Rubico.screenHeight - min / 2, colors, max, min));
+	}
+
+	public static void addLeft(float y, float min, float max, float[] colors) {
+		if (EndlessMode.fps < 45)
+			return;
+		Particles.BUMPS.add(POOL.obtain().init(-min / 2, y - max / 2, colors, min, max));
+	}
+
+	public static void addRight(float y, float min, float max, float[] colors) {
+		if (EndlessMode.fps < 45)
+			return;
+		Particles.BUMPS.add(POOL.obtain().init(Rubico.screenWidth - min / 2, y - max / 2, colors, min, max));
+	}
+
 	public Bump init(float x, float y, float[] colors, float width, float height, int index) {
 		init(x, y, colors, width, height);
 		this.index = index;
@@ -44,7 +67,10 @@ public class Bump {
 		return this;
 	}
 
+//	static int max;
 	public static void act(SpriteBatch batch, Array<Bump> array) {
+//		max = Math.max(max, array.size);
+//		System.out.println("bump : " + max);
 		if (EndlessMode.alternate) {
 			for (Bump b : array) {
 				batch.setColor(b.colors[b.index]);

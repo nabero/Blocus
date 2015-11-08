@@ -13,7 +13,7 @@ import elements.particles.Particles;
 
 public class Star implements Poolable {
 	
-	private static final int WIDTH = Rubico.screenWidth / 130, MINWIDTH = (int) (WIDTH / 2.5f);
+	private static final float WIDTH = Rubico.screenWidth / 130, MINWIDTH = (int) (WIDTH / 2.5f);
 	private static final Pool<Star> POOL = new Pool<Star>(Particles.MAX_BACKGROUND) {
 		@Override
 		protected Star newObject() {
@@ -29,7 +29,7 @@ public class Star implements Poolable {
 			tmp = Math.abs((float) (Rubico.R.nextFloat() * WIDTH));
 		w = tmp;
 		x = (Rubico.R.nextFloat() * Rubico.screenWidth + w) - w/2;
-		speed = (w * w) * 0.5f;
+		speed = (w * w) * 15f;
 	}
 
 	@Override 

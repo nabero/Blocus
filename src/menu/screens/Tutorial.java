@@ -3,6 +3,8 @@ package menu.screens;
 import menu.OnClick;
 import menu.ui.TutoButton;
 import jeu.Rubico;
+import jeu.mode.EndlessMode;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,6 +19,7 @@ public class Tutorial extends AbstractScreen {
 	
 	public Tutorial(final Game game) {
 		super(game);
+		EndlessMode.endless = true;
 		Rubico.talkToTheWorld.showAds(false);
 		step1 = new Texture(Gdx.files.internal("atlas/step1.png"));
 		step2 = new Texture(Gdx.files.internal("atlas/step2.png"));
@@ -31,6 +34,7 @@ public class Tutorial extends AbstractScreen {
 		button3 = new TutoButton(WIDTH, HEIGHT, X, Y3, new OnClick() {
 			public void onClick() {				game.setScreen(new TutoStep3(game));			}
 		}, step3);
+		ajout(buttonBack);
 	}
 
 	@Override
@@ -42,6 +46,7 @@ public class Tutorial extends AbstractScreen {
 		button1.draw(Rubico.batch);
 		button2.draw(Rubico.batch);
 		button3.draw(Rubico.batch);
+		buttonBack.draw(Rubico.batch);
 		Rubico.end();
 	}
 

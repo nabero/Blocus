@@ -11,6 +11,8 @@ import com.badlogic.gdx.Input.Keys;
 
 import elements.generic.Ball;
 import elements.generic.blocs.Bloc;
+import elements.generic.blocs.Column;
+import elements.generic.bonus.Diamond;
 
 public class DesktopTests {
 	
@@ -19,13 +21,13 @@ public class DesktopTests {
 		if (EndlessMode.oneToFour != 2)
 			return;
 		if (Gdx.input.isKeyPressed(Keys.PAGE_DOWN))	{
-			EndlessMode.cam.translate(0, 0, 1);
-			EndlessMode.cam();
+			EndlessMode.getCam().translate(0, 0, 1);
+			Rubico.cam();
 			SoundMan.playBruitage(SoundMan.bonusTaken);
 		}
 		// POC
 		if (Gdx.input.isKeyPressed(Keys.Z)) {
-			Ball.addBall(Ball.BALLS.get(0).x, Ball.BALLS.get(0).y, -Ball.BALLS.get(0).dir.x, -Ball.BALLS.get(0).dir.y);
+			Ball.addBall(Ball.BALLS.get(0).centerX, Ball.BALLS.get(0).centerY, -Ball.BALLS.get(0).dir.x, -Ball.BALLS.get(0).dir.y);
 		}
 		if (Gdx.input.isKeyPressed(Keys.E)) {
 			Ball.CHRONO_EXPLOSIVE++;
@@ -36,8 +38,10 @@ public class DesktopTests {
 		}
 		if (Gdx.input.isKeyPressed(Keys.R)) {
 			Bloc.clear();
-			Builder.nextSeed();
-			Builder.init();
+//			Builder.nextSeed();
+			Column.clear();
+			for (int i = 0; i < 8; i++)
+				Column.COLUMNS.get(i).generateBloc(i, i);
 		}
 		
 		if (Gdx.input.isKeyPressed(Keys.F1))	EndlessMode.invicibility = true;
@@ -47,6 +51,10 @@ public class DesktopTests {
 		if (Gdx.input.isKeyPressed(Keys.F11))	EndlessMode.invoque = true;
 		if (Gdx.input.isKeyPressed(Keys.F12))	EndlessMode.invoque = false;
 		if (Gdx.input.isKeyPressed(Keys.F5)) 	Score.score++;
+		if (Gdx.input.isKeyPressed(Keys.D)) {
+			Rubico.profile.addDiamond(300);
+			Diamond.add(Rubico.screenWidth * Rubico.R.nextFloat(), Rubico.screenHeight);
+		}
 	}
 
 }

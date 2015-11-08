@@ -76,7 +76,7 @@ public class TutoButton extends AbstractButton {
 			b.draw(batch);
 		
 		if (Gdx.input.justTouched()) {
-			if (Physic.isPointInRect(Gdx.input.getX(), Rubico.screenHeight - Gdx.input.getY(), x, y, width + PADDING_BARRE, height)) {
+			if (Physic.isPointInRect(Physic.getXClic(), Physic.getYClic(), x, y, width + PADDING_BARRE, height)) {
 				impulse(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 				if (click != null)
 					click.onClick();

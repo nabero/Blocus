@@ -15,29 +15,59 @@ import com.badlogic.gdx.math.Vector2;
 
 public class Button extends AbstractButton {
 
-	private static final float PADDING_BARRE = Stats.U;
+	public static final float PADDING_BARRE = Stats.U;
 	private BitmapFont font;
-	private String texte;
-	private boolean clicked = false;
+	private String texte = "";
+	private boolean clicked = false, glow = false;
 	public Sprite sprite;
 	public OnClick click;
-	private float clickTime = 0, height, width;
-	private final float originalWidth, originalHeight;
+	private float clickTime = 0, height, width, oscillation = 0.1f, dir = 0.01f;
+	private final float originalWidth, originalHeight, originalScaleX, originalScaleY;
 	
-
-	public Button(String s, BitmapFont font, int srcWidth, int srcHeight, float srcX, float f, OnClick click) {
+	public Button(boolean glow, String s, BitmapFont font, float srcWidth, float srcHeight, float srcX, float f, OnClick click) {
+		this(s, font, srcWidth, srcHeight, srcX, f, click);
+		this.glow = glow;
+	}
+	
+	public Button(String s, BitmapFont font, float srcWidth, float srcHeight, float srcX, float f, OnClick click) {
 		sprite = new Sprite();
 		sprite.setBounds(srcX, f, srcWidth, srcHeight);
 		this.originalHeight = srcHeight;
 		this.originalWidth = srcWidth;
 		init(s, font, srcX, f);
 		this.click = click;
+		originalScaleX = font.getScaleX();
+		originalScaleY = font.getScaleY();
 	}
-
+	
+	public Button(float srcWidth, float srcHeight, float srcX, float f, OnClick click) {
+		sprite = new Sprite();
+		sprite.setBounds(srcX, f, srcWidth, srcHeight);
+		this.originalHeight = srcHeight;
+		this.originalWidth = srcWidth;
+		updateBorders(srcX, f, srcWidth, srcHeight);
+		this.click = click;
+		font = Rubico.menuFont;
+		originalScaleX = font.getScaleX();
+		originalScaleY = font.getScaleY();
+	}
+	
 	private void init(String s, BitmapFont font, float x, float y) {
 		this.font = font;
 		texte = s;
 		updateBorders(font, x, y, originalWidth, originalHeight);
+	}
+	
+	private void updateBorders(float x, float y, float originalWidth, float originalHeight) {
+		height = originalHeight;
+		width = originalWidth;
+		y = (y + (originalHeight/2)) - (height/2);
+		x = (x + (originalWidth/2)) - (width/2);
+		x -= PADDING_BARRE;
+		y -= PADDING_BARRE;
+		width += PADDING_BARRE * 2;
+		height += PADDING_BARRE * 2;
+		setBarres(x, y);
 	}
 
 	private void updateBorders(BitmapFont font, float x, float y, float originalWidth, float originalHeight) {
@@ -66,21 +96,14 @@ public class Button extends AbstractButton {
 		this.y = y;
 	}
 
-	public Button(String s, BitmapFont font, int srcWidth, int srcHeight, float srcX, int srcY) {
+	public Button(String s, BitmapFont font, float srcWidth, float srcHeight, float srcX, float srcY) {
 		sprite = new Sprite();
 		sprite.setBounds(srcX, srcY, srcWidth, srcHeight);
 		this.originalHeight = srcHeight;
 		this.originalWidth = srcWidth;
 		init(s, font, srcX, srcY);
-	}
-
-	public Button(String s, BitmapFont font, int srcWidth, int srcHeight, float srcX, int srcY, OnClick onClick) {
-		sprite = new Sprite();
-		sprite.setBounds(srcX, srcY, srcWidth, srcHeight);
-		click = onClick;
-		this.originalHeight = srcHeight;
-		this.originalWidth = srcWidth;
-		init(s, font, srcX, srcY);
+		originalScaleX = font.getScaleX();
+		originalScaleY = font.getScaleY();
 	}
 
 	public void setClick(OnClick click) {
@@ -90,22 +113,31 @@ public class Button extends AbstractButton {
 	public void draw(SpriteBatch batch) {
 		drawBackground(batch);
 		
-		font.draw(batch, texte, getX(),	getY());
+		if (glow) {
+			if (oscillation > 0.1f)
+				dir -= 0.00005f;
+			else
+				dir += 0.00005f;
+			oscillation += dir;
+			
+			font.setScale(originalScaleX + dir, originalScaleY + dir);
+			font.draw(batch, texte, getX(),	getY());
+			font.setScale(originalScaleX, originalScaleY);
+		} else
+			font.draw(batch, texte, getX(),	getY());
 		
 		for (Barre b : barres)
 			b.draw(batch);
 		
-		if (Gdx.input.justTouched()) {
-			if (Physic.isPointInRect(Gdx.input.getX(), Rubico.screenHeight - Gdx.input.getY(), x, y, width + PADDING_BARRE, height)) {
-				impulse(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-				if (click != null)
-					click.onClick();
-			}
+		if (Gdx.input.justTouched() && Physic.isPointInRect(Physic.getXClic(), Physic.getYClic(), x, y, width + PADDING_BARRE, height)) {
+			impulse(Physic.getXClic(), Physic.getYClic());
+			if (click != null)
+				click.onClick();
 		}
 		act();
 	}
 
-	private void impulse(int x, int y) {
+	private void impulse(float x, float y) {
 		tmpTouched.x = x;
 		tmpTouched.y = y;
 		for (Barre b : barres)
@@ -161,7 +193,7 @@ public class Button extends AbstractButton {
 	}
 
 	public static void testClick(Button b, float xOffset) {
-		if (b != null && Physic.isPointInRect(Gdx.input.getX() + xOffset, Rubico.screenHeight - Gdx.input.getY(), 0, b.sprite.getY() - Stats.U, Rubico.screenWidth, b.sprite.getHeight() + Stats.UU)) {
+		if (b != null && Physic.isPointInRect(Physic.getXClic(), Physic.getYClic(), 0, b.sprite.getY() - Stats.U, Rubico.screenWidth, b.sprite.getHeight() + Stats.UU)) {
 			if (b.click != null)
 				b.click.onClick();
 		}

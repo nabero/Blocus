@@ -8,13 +8,21 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
-import elements.generic.Paddle;
+import elements.generic.paddles.StraightPaddle;
 
 public class Physic {
 	
+	public static float getXClic() {
+		return ((float)Gdx.input.getX() / (float)Gdx.graphics.getWidth()) * Rubico.screenWidth;
+	}
+	
+	public static float getYClic() {
+		return (((float)Gdx.graphics.getHeight() - ((float)Gdx.input.getY())) / (float)Gdx.graphics.getHeight()) * Rubico.screenHeight;
+	}
+	
 	public static boolean pointIn(final Sprite s) {
 		final int x = Gdx.input.getX();
-		final int y = Rubico.screenHeight - Gdx.input.getY();
+		final float y = Rubico.screenHeight - Gdx.input.getY();
         return s.getX() <= x && s.getX() + s.getWidth() >= x && s.getY() <= y && s.getY() + s.getHeight() >= y;
 	}
 	
@@ -44,6 +52,11 @@ public class Physic {
 			dir.x += amplitude * EndlessMode.delta;
 		mvtNoCheck(pos, dir);
 		return way;
+	}
+	
+	public static boolean isPointInRectDebug(final float x, final float y, final float rectX, final float rectY, final float rectWidth, final float rectHeight) {
+		System.out.println("x :" + x + "       y : " + y + "          rectX : " + rectX + "       rectY : " + rectY + "           width : " + rectWidth + "        height : " + rectHeight);
+		return rectX <= x && rectX + rectWidth >= x && rectY <= y && rectY + rectHeight >= y;
 	}
 	
 	public static boolean isPointInRect(final float x, final float y, final float rectX, final float rectY, final float rectWidth, final float rectHeight) {
@@ -106,8 +119,8 @@ public class Physic {
 	private static final Vector2 tmpPos = new Vector2();
 	
 	public static float getAngleWithPlayer(final Vector2 pos, final float halfWidth, final float halfHeight) {
-		tmpPos.x = Paddle.xCenter;
-		tmpPos.y = Paddle.yCenter;
+		tmpPos.x = EndlessMode.ship.xCenter;
+		tmpPos.y = EndlessMode.ship.yCenter;
 		return tmpPos.sub(pos.x + halfWidth, pos.y + halfHeight).angle();
 	}
 

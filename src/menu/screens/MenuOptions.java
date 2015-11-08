@@ -13,6 +13,8 @@ public class MenuOptions extends AbstractScreen {
 	private static final int LINE2 = 4;
 	private static final int LINE3 = 11;
 	private static final int LINE4 = 18;
+	private static final int LINE5 = 25;
+	private static final int LINE6 = 32;
 
 	public MenuOptions(final Game game) {
 		super(game);
@@ -79,6 +81,23 @@ public class MenuOptions extends AbstractScreen {
 			}
 		});
 		ajout(screenshake);
+		String lightstxt = "Lights : on";
+		if (Rubico.profile.lights() == false)
+			lightstxt = "Lights : off";
+		final Button lights = new Button(lightstxt, Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, (Rubico.screenWidth / 2) - Menu.BUTTON_WIDTH / 2, -Menu.yOffset + Rubico.screenHeight - Menu.BUTTON_HEIGHT * LINE5);
+		lights.setClick(new OnClick() {
+			@Override
+			public void onClick() {
+				Rubico.profile.switchLights();
+				if (Rubico.profile.lights())
+					lights.setTexte("Lights : on");
+				else 
+					lights.setTexte("Lights : off");
+			}
+		});
+		ajout(lights);
+		
 	}
+
 
 }

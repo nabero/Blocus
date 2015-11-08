@@ -13,23 +13,24 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 
 import elements.generic.Ball;
-import elements.generic.Paddle;
-import elements.generic.PaddleShot;
 import elements.generic.blocs.Column;
+import elements.generic.paddles.StraightPaddle;
+import elements.generic.paddles.PaddleShot;
 import elements.particles.Particles;
 
 public class TutoStep2 extends AbstractScreen {
 	
-	private final Paddle paddle = new Paddle();
-	private static final FlickerText MOVE_TT = new FlickerText("Clear a column \nto upgrade the ball");
+	private final StraightPaddle paddle = new StraightPaddle();
+	private static final FlickerText MOVE_TT = new FlickerText(" Clear a column \n to upgrade \n the ball");
 	private boolean ok = false, pause = false;
 
 	public TutoStep2(Game game) {
 		super(game);
-		paddle.initialiser();
+//		paddle.initialiser();
 		FlickerText.clear();
 		FlickerText.add(MOVE_TT);
 		Builder.init();
+		Gdx.input.setCatchBackKey(true);
 	}
 	
 	@Override
@@ -57,11 +58,9 @@ public class TutoStep2 extends AbstractScreen {
 		Rubico.begin(Gdx.graphics.getDeltaTime());
 		Rubico.batch.begin();
 		Particles.background(Rubico.batch);
-		FlickerText.draw(Rubico.batch);
 		Column.draw(Rubico.batch);
 		Ball.draw(Rubico.batch);
 		Particles.draw(Rubico.batch);
-		PaddleShot.act(Rubico.batch);
 		paddle.draw(Rubico.batch);
 		paddle.move();
 		ScreenShake.act();
@@ -73,6 +72,9 @@ public class TutoStep2 extends AbstractScreen {
 		if (pause)
 			Buttons.backButton(Rubico.batch, game);
 		Rubico.end();
+		Rubico.batch.begin();
+		FlickerText.draw(Rubico.batch);
+		Rubico.batch.end();
 	}
 
 }

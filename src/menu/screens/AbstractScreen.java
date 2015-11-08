@@ -36,7 +36,7 @@ public abstract class AbstractScreen implements Screen {
 	protected Array<Button> buttons = new Array<Button>();
 	private Credits credits;
 	public static final String PLAY = "Play!", SHIP = "Weapon", OPTION = "Options", HIGHSCORE = "Highscores", EXIT = "Exit", BACK = "BACK", WEAPON_VOL = "WEAPON VOL  ", MOINS = "-", PLUS = "+", BRUITAGE_VOL = "EFFECTS VOL  ", MUSIQUE_VOL = "MUSIC VOL  ", INTENSITY = "INTENSITY : ", OTHER_WEAP = "Next weapon", TUTO = "Tutorial" , ACHIEVEMENT = "Achievements", SUPPORT_US = "Support us !";
-	public final static int PADDING = 11, BUTTON_WIDTH = (Rubico.screenWidth / PADDING) * 9, BUTTON_HEIGHT = Rubico.screenHeight / 50, BUTTON_HALF_WIDTH = BUTTON_WIDTH / 2, BUTTON_HALF_HEIGHT = BUTTON_HEIGHT / 2,
+	public final static float PADDING = 11, BUTTON_WIDTH = (Rubico.screenWidth / PADDING) * 9, BUTTON_HEIGHT = Rubico.screenHeight / 50, BUTTON_HALF_WIDTH = BUTTON_WIDTH / 2, BUTTON_HALF_HEIGHT = BUTTON_HEIGHT / 2,
 			SMALL_BUTTON_WIDTH = (Rubico.screenWidth / PADDING) * 4, SMALL_BUTTON_HEIGHT = Rubico.screenHeight / 18, MINI_BOUTON_WIDTH = SMALL_BUTTON_WIDTH/2, MINI_BOUTON_HEIGHT = SMALL_BUTTON_HEIGHT/2, yOffset = Rubico.screenHeight/10;
 	public static OrthographicCamera cam = new OrthographicCamera(Rubico.screenWidth, Rubico.screenHeight);
 	protected Button buttonBack;
@@ -50,7 +50,7 @@ public abstract class AbstractScreen implements Screen {
 		Rubico.initBloom();
 		cam.position.set(Rubico.screenWidth /2, Rubico.screenHeight/2, 0);
 		
-		buttonBack = new Button(BACK, Rubico.menuFontSmall, SMALL_BUTTON_WIDTH, SMALL_BUTTON_HEIGHT, -BUTTON_HEIGHT, BUTTON_HEIGHT*3.5f,
+		buttonBack = new Button(BACK, Rubico.menuFontSmall, SMALL_BUTTON_WIDTH, SMALL_BUTTON_HEIGHT, -BUTTON_HEIGHT, BUTTON_HEIGHT*3.0f,
 	    		new OnClick() {
 					public void onClick() {
 						changeMenu(new Menu(game));

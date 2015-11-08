@@ -24,11 +24,6 @@ public interface TalkToTheWorld {
      */
     void getScores();
    
-    /**
-     * gets the score and gives access to the raw score data
-     */
-    void getScoresData();
-    
     void unlockAchievementGPGS(String achievementId);
     void displayToast(String s);
     void bragTwitter(String s);
@@ -39,4 +34,8 @@ public interface TalkToTheWorld {
 //	void buyXp();
 	void showAds(boolean show);
 	void buyXp();
+	void buyRemoveAds();
+	void displayInterstitial();
+	void loadInterstitial();
+	void otherGames(String url);
 }

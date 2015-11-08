@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.Array;
 public class TemporaryText {
 
 	private static final Array<TemporaryText> TEXTS = new Array<TemporaryText>();
-	private static final float Y = Rubico.screenHeight * 0.35f, OFFSET = Rubico.screenHeight * 0.1f;
+	private static final float Y = Rubico.screenHeight * 0.45f, OFFSET = Rubico.screenHeight * 0.1f;
 	public float alpha = 0;
 	private final String text;
 	
@@ -24,7 +24,7 @@ public class TemporaryText {
 	}
 
 	public boolean act(SpriteBatch batch) {
-		Rubico.effectFont.setColor(.2f, alpha, 1, alpha);
+		Rubico.effectFont.setColor(.2f, Math.min(alpha * 2, 1), 1, Math.min(alpha * 2, 1));
 		Rubico.effectFont.drawMultiLine(batch, text, (Rubico.halfWidth) - Rubico.effectFont.getMultiLineBounds(text).width / 2, Y - (alpha * OFFSET));
 		alpha -= EndlessMode.deltaDiv2;
 		return alpha <= 0;
@@ -32,7 +32,7 @@ public class TemporaryText {
 	
 
 	public void reset() {
-		alpha = 1;
+		alpha = 1.25f;
 	}
 
 	public static void add(TemporaryText text) {

@@ -30,12 +30,15 @@ public class Choice extends AbstractScreen {
 	protected int index1, index2, index3;
 	public final static Array<Bloc> BLOCS = new Array<Bloc>();
 	private static final float 
-	ECART = 0.70f,
-	LINE_CHOOSE_MODE = 1.7f,
-	LIGNE_ENDLESS = LINE_CHOOSE_MODE + ECART * 1.1f,
-	LIGNE_LEVEL = LIGNE_ENDLESS + ECART,
-	LINE_CHOOSE_PADDLE = LIGNE_LEVEL + ECART * 1.6f,
-	LINE_PADDLES = LINE_CHOOSE_PADDLE + ECART * 3.5f;
+		ECART = 0.60f,
+		LINE_CHOOSE_MODE = 1.7f,
+		LIGNE_ENDLESS = LINE_CHOOSE_MODE + ECART * 1.3f,
+		LIGNE_LEVEL = LIGNE_ENDLESS + ECART,
+		LINE_CHOOSE_PADDLE = LIGNE_LEVEL + ECART * 1.6f,
+		LINE_PADDLES = LINE_CHOOSE_PADDLE + ECART * 4.05f;
+	private static final float OK_COLOR = AssetMan.convertARGB(1, 0, .75f, .95f),
+			NOK_COLOR = AssetMan.convertARGB(1, .95f, .25f, .05f),
+			PADDLE_BOTTOM = 0.35f;
 
 	public Choice(Game game) {
 		super(game);
@@ -46,7 +49,7 @@ public class Choice extends AbstractScreen {
 	public void setUpScreenElements() {
 		Gdx.input.setCatchBackKey(true);
 
-		ajout(new Button(" Choose your mode : ", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_CHOOSE_MODE), new OnClick() {
+		ajout(new Button(" M ", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_CHOOSE_MODE), new OnClick() {
 			public void onClick() {				changeMenu(new EndlessMode(game, Rubico.batch, 1, true, surprise));			}
 		}));
 		ajout(new Button(" Endless ", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_ENDLESS), new OnClick() {
@@ -56,18 +59,21 @@ public class Choice extends AbstractScreen {
 			public void onClick() {				changeMenu(new LevelChooser(game, surprise));			}
 		}));
 		
-		ajout(new Button(" Choose your paddle : ", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_CHOOSE_PADDLE), new OnClick() {
+		ajout(new Button(" Paddle ? ", Rubico.menuFont, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_CHOOSE_PADDLE), new OnClick() {
 			public void onClick() {				changeMenu(new EndlessMode(game, Rubico.batch, 1, true, surprise));			}
 		}));
 		
 		
-		ajout(new Button(Rubico.screenWidth * 0.4f, Rubico.screenHeight * 0.18f, Rubico.screenWidth * 0.05f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES), new OnClick() {
+		ajout(new Button(Button.PADDLE_WIDTH, Button.PADDLE_HEIGHT,
+				Button.PADDLE_HORIZONTAL_OFFSET, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES), new OnClick() {
 			public void onClick() {				Rubico.profile.setSelectedPaddle(StraightPaddle.ID);			}
 		}));
-		ajout(new Button(Rubico.screenWidth * 0.4f, Rubico.screenHeight * 0.18f, Rubico.screenWidth * 0.55f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES), new OnClick() {
+		ajout(new Button(Button.PADDLE_WIDTH, Button.PADDLE_HEIGHT,
+				Rubico.halfWidth + Button.PADDLE_HORIZONTAL_OFFSET, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES), new OnClick() {
 			public void onClick() {				Rubico.profile.setSelectedPaddle(SpreadPaddle.ID);			}
 		}));
-		ajout(new Button(Rubico.screenWidth * 0.4f, Rubico.screenHeight * 0.18f, Rubico.screenWidth * 0.29f, (Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES)) - (Rubico.screenHeight*0.24f), new OnClick() {
+		ajout(new Button(Button.PADDLE_WIDTH, Button.PADDLE_HEIGHT,
+				Rubico.screenWidth * 0.25f + Button.PADDLE_HORIZONTAL_OFFSET, (Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES)) - (Rubico.screenHeight*0.24f), new OnClick() {
 			public void onClick() {
 				if (Rubico.profile.isShipUnlocked())
 					Rubico.profile.setSelectedPaddle(ShipPaddle.ID);
@@ -75,12 +81,6 @@ public class Choice extends AbstractScreen {
 					blink = 1;
 			}
 		}));
-		
-		ajout(new Button("Be the hero!", Rubico.menuFontSmall, BUTTON_WIDTH, BUTTON_HEIGHT, Rubico.screenWidth / PADDING, Rubico.screenHeight - (Rubico.heightDiv10 * LIGNE_LEVEL) - ECART * 2.5f, new OnClick() {
-			public void onClick() {				surprise = !surprise;			}
-		}));
-		
-//		ajout(buttonBack);
 	}
 	
 	static float blink = 0;
@@ -104,64 +104,63 @@ public class Choice extends AbstractScreen {
 		
 		batch.setColor(0, 1, 0, 0.15f);
 		if (Rubico.profile.selectedPaddle == StraightPaddle.ID) 
-			batch.draw(AssetMan.debris, Rubico.screenWidth * 0.02f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 0.4f, Rubico.screenWidth * 0.46f, Rubico.screenHeight * 0.205f);
-		else if (Rubico.profile.selectedPaddle == SpreadPaddle.ID) {
-			batch.draw(AssetMan.debris, Rubico.screenWidth * 0.52f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 0.4f, Rubico.screenWidth * 0.46f, Rubico.screenHeight * 0.205f);
-		} else
-			batch.draw(AssetMan.debris, Rubico.screenWidth * 0.27f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 8.0f, Rubico.screenWidth * 0.46f, Rubico.screenHeight * 0.205f);
-		float paddleBottom = 0.33f;
+			batch.draw(AssetMan.debris, Button.PADDLE_HORIZONTAL_OFFSET - 0.5f, Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 0.4f, Button.PADDLE_WIDTH + 1, Rubico.screenHeight * 0.205f);
+		else if (Rubico.profile.selectedPaddle == SpreadPaddle.ID)
+			batch.draw(AssetMan.debris, Rubico.screenWidth * 0.5f + (Button.PADDLE_HORIZONTAL_OFFSET - 0.5f), Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 0.4f, Button.PADDLE_WIDTH + 1, Rubico.screenHeight * 0.205f);
+		else
+			batch.draw(AssetMan.debris, Rubico.screenWidth * 0.25f + (Button.PADDLE_HORIZONTAL_OFFSET - 0.5f), Rubico.screenHeight - (Rubico.heightDiv10 * LINE_PADDLES) - 8.0f, Button.PADDLE_WIDTH + 1, Rubico.screenHeight * 0.205f);
 		// left
 		batch.setColor(colors[20]);
-		batch.draw(AbstractPaddle.SIDE, 	2.4f, 									Rubico.screenHeight * paddleBottom, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.SIDE, 	2.4f, 									Rubico.screenHeight * PADDLE_BOTTOM, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 			// mid
 		batch.setColor(colors[1]);
-		batch.draw(AbstractPaddle.MID, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * paddleBottom, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.MID, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * PADDLE_BOTTOM, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 		
-		shotTrail(2.4f, paddleBottom + .06f);
+		shotTrail(2.4f, PADDLE_BOTTOM + .06f);
 		batch.setColor(colors[1]);
-		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (paddleBottom + .06f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		shotTrail(2.4f, paddleBottom + .12f);
+		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .06f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		shotTrail(2.4f, PADDLE_BOTTOM + .12f);
 		batch.setColor(colors[1]);
-		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (paddleBottom + .12f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		shotTrail(2.4f, paddleBottom + .18f);
+		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .12f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		shotTrail(2.4f, PADDLE_BOTTOM + .18f);
 		batch.setColor(colors[1]);
-		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (paddleBottom + .18f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		2.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .18f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 			// right
 		batch.setColor(colors[20]);
-		batch.draw(AbstractPaddle.SIDE, 	2.4f + AbstractPaddle.WIDTH, 			Rubico.screenHeight * paddleBottom, -AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.SIDE, 	2.4f + AbstractPaddle.WIDTH, 			Rubico.screenHeight * PADDLE_BOTTOM, -AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 		
 		
 		
 		colors = PrecalculatedParticles.getColors(Rubico.profile.lvlSpreadPaddle);
 		// left
 		batch.setColor(colors[20]);
-		batch.draw(AbstractPaddle.SIDE, 	11.4f, 									Rubico.screenHeight * paddleBottom, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.SIDE, 	11.4f, 									Rubico.screenHeight * PADDLE_BOTTOM, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 			// mid
 		batch.setColor(colors[1]);
-		batch.draw(AbstractPaddle.MID, 		11.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * paddleBottom, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.MID, 		11.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * PADDLE_BOTTOM, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 		
-		shotTrail(11.4f, 					paddleBottom + .06f);
+		shotTrail(11.4f, 					PADDLE_BOTTOM + .06f);
 		batch.setColor(colors[1]);
-		batch.draw(AssetMan.partBloc, 		11.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (paddleBottom + .06f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		11.4f + AbstractPaddle.TIER_WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .06f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 		
-		shotTrail(11.4f, 					paddleBottom + .18f);
-		shotTrail(11.4f - Bloc.WIDTH, 		paddleBottom + .165f);
-		shotTrail(11.4f - Bloc.WIDTH * 2, 	paddleBottom + .15f);
-		shotTrail(11.4f + Bloc.WIDTH, 		paddleBottom + .165f);
-		shotTrail(11.4f + Bloc.WIDTH * 2, 	paddleBottom + .15f);
+		shotTrail(11.4f, 					PADDLE_BOTTOM + .18f);
+		shotTrail(11.4f - Bloc.WIDTH, 		PADDLE_BOTTOM + .165f);
+		shotTrail(11.4f - Bloc.WIDTH * 2, 	PADDLE_BOTTOM + .15f);
+		shotTrail(11.4f + Bloc.WIDTH, 		PADDLE_BOTTOM + .165f);
+		shotTrail(11.4f + Bloc.WIDTH * 2, 	PADDLE_BOTTOM + .15f);
 		batch.setColor(colors[1]);
-		batch.draw(AssetMan.partBloc, 		11.4f + AbstractPaddle.TIER_WIDTH, 						Rubico.screenHeight * (paddleBottom + .18f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) - Bloc.WIDTH, 		Rubico.screenHeight * (paddleBottom + .18f) - 0.5f, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) - Bloc.WIDTH * 2, 	Rubico.screenHeight * (paddleBottom + .18f) - 1, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) + Bloc.WIDTH, 		Rubico.screenHeight * (paddleBottom + .18f) - 0.5f, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
-		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) + Bloc.WIDTH * 2, 	Rubico.screenHeight * (paddleBottom + .18f) - 1, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		11.4f + AbstractPaddle.TIER_WIDTH, 						Rubico.screenHeight * (PADDLE_BOTTOM + .18f), AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) - Bloc.WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .18f) - 0.5f, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) - Bloc.WIDTH * 2, 	Rubico.screenHeight * (PADDLE_BOTTOM + .18f) - 1, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) + Bloc.WIDTH, 		Rubico.screenHeight * (PADDLE_BOTTOM + .18f) - 0.5f, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AssetMan.partBloc, 		(11.4f + AbstractPaddle.TIER_WIDTH) + Bloc.WIDTH * 2, 	Rubico.screenHeight * (PADDLE_BOTTOM + .18f) - 1, AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 			// right
 		batch.setColor(colors[20]);
-		batch.draw(AbstractPaddle.SIDE, 	11.4f + AbstractPaddle.WIDTH, 			Rubico.screenHeight * paddleBottom, -AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
+		batch.draw(AbstractPaddle.SIDE, 	11.4f + AbstractPaddle.WIDTH, 			Rubico.screenHeight * PADDLE_BOTTOM, -AbstractPaddle.TIER_WIDTH, AbstractPaddle.HEIGHT);
 		
+		// paddle ship
 		batch.setColor(1, 1, 1, 1);
-		batch.draw(AssetMan.shipPaddle, 6.9f, paddleBottom + 1.2f, AbstractPaddle.WIDTH, AbstractPaddle.HEIGHT * 2.5f);
-		
+		batch.draw(AssetMan.shipPaddle, 6.9f, PADDLE_BOTTOM + 1.2f, AbstractPaddle.WIDTH, AbstractPaddle.HEIGHT * 2.5f);	
 		
 		colors = PrecalculatedParticles.getColors(Rubico.profile.lvlShipPaddle);
 		
@@ -175,36 +174,19 @@ public class Choice extends AbstractScreen {
 		drawBullet(WIDTH, HALF_WIDTH, x + 1.68f, y + 0.2f);
 		drawBullet(WIDTH, HALF_WIDTH, x + 1.68f, y + 2.2f);
 
-		// connectors
-		if (Rubico.profile.lvlPaddle >= Profil.LVL_TO_UNLOCK_SHIP) {
-			batch.setColor(0, .75f, .95f, 1);
-			batch.draw(AssetMan.debris, 1.45f, 7, .1f, 3f);
-			batch.draw(AssetMan.debris, 1.45f, 7, 3f, .1f);
-			batch.draw(AssetMan.debris, 1.45f, 5.7f, 0.5f, 0.5f, 1, 1, 0.1f, 1f, -30);
-		} else {
-			batch.setColor(.95f, .25f, .05f, 1);
-			batch.draw(AssetMan.debris, 1.45f, 7, .1f + blink, 3f);
-			batch.draw(AssetMan.debris, 1.45f, 7, 3f, .1f + blink);
-			batch.draw(AssetMan.debris, 1.45f, 5.7f, 0.5f, 0.5f, 1, 1, 0.1f, 1f, -30);
-		}
-		if (Rubico.profile.lvlSpreadPaddle >= Profil.LVL_TO_UNLOCK_SHIP) {
-			batch.setColor(0, .75f, .95f, 1);
-			batch.draw(AssetMan.debris, 16.35f, 7, .1f, 3f);
-			batch.draw(AssetMan.debris, 13.35f, 7, 3f, .1f);
-			batch.draw(AssetMan.debris, 14.45f, 5.7f, 0.5f, 0.5f, 1, 1, 0.1f, 1f, -30);
-		} else {
-			batch.setColor(.95f, .25f, .05f, 1);
-			batch.draw(AssetMan.debris, 16.35f, 7, .1f + blink, 3f);
-			batch.draw(AssetMan.debris, 13.35f, 7, 3f, .1f + blink);
-			batch.draw(AssetMan.debris, 14.45f, 5.7f, 0.5f, 0.5f, 1, 1, 0.1f, 1f, -30);
-		}
+		// connectors		
+		if (Rubico.profile.lvlPaddle >= Profil.LVL_TO_UNLOCK_SHIP)	batch.setColor(OK_COLOR);
+		else														batch.setColor(NOK_COLOR);
+		batch.draw(AssetMan.debris, 1.45f, 8, .1f, 3f);
+		batch.draw(AssetMan.debris, 1.45f, 8, 4.35f, .1f);
 		
-		Rubico.menuFont.draw(batch, Strings.getNumber(Rubico.profile.lvlPaddle), 0.75f, 6.6f);
-		Rubico.menuFont.draw(batch, "5", 2.25f, 6.4f);
+		if (Rubico.profile.lvlSpreadPaddle >= Profil.LVL_TO_UNLOCK_SHIP)	batch.setColor(OK_COLOR);
+		else																batch.setColor(NOK_COLOR);
+		batch.draw(AssetMan.debris, 16.48f, 8, .1f, 3f);
+		batch.draw(AssetMan.debris, 12.35f, 8, 4.2f, .1f);
 		
-		
-		Rubico.menuFont.draw(batch, Strings.getNumber(Rubico.profile.lvlSpreadPaddle), 13.75f, 6.6f);
-		Rubico.menuFont.draw(batch, "5", 15.25f, 6.4f);
+		Rubico.menuFont.draw(batch, Strings.getNumber(Rubico.profile.lvlPaddle), 2.85f, 7.6f);		
+		Rubico.menuFont.draw(batch, Strings.getNumber(Rubico.profile.lvlSpreadPaddle), 13.75f, 7.6f);
 		
 		if (surprise) {
 			batch.setColor(0, .75f, .25f, .25f);
